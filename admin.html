@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Admin — Ferdie Cayanga</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+body{margin:0;background:#0d0f14;color:#ece8df;font:16px/1.5 system-ui,sans-serif;padding:24px}
+.w{max-width:860px;margin:0 auto}h1{font-size:28px;margin:0 0 20px}
+input,textarea,select,button{font:inherit;color:inherit;background:#141821;border:1px solid #262c39;padding:10px 12px;width:100%;border-radius:6px}
+textarea{min-height:70px}label{display:block;margin:12px 0 4px;font-size:13px;color:#8b91a0}
+button{cursor:pointer;width:auto;background:#9cc4ff;color:#0d0f14;border:0;font-weight:600;padding:10px 20px}
+button.g{background:none;color:#ece8df;border:1px solid #262c39}button.d{background:#ff8a5c}
+.row{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #262c39}
+.row img,.row i{width:72px;height:54px;object-fit:cover;background:#1c2a44;flex:none}.row b{flex:1}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:600px){.g2{grid-template-columns:1fr}}
+#msg{color:#9cc4ff;min-height:24px}.hide{display:none}
+</style></head><body><div class="w">
+<h1>Portfolio admin</h1><div id="msg"></div>
+<div id="login"><label>Email</label><input id="em" type="email" autocomplete="username">
+<label>Password</label><input id="pw" type="password" autocomplete="current-password"><p><button id="in">Log in</button></p></div>
+<div id="app" class="hide">
+<p><button id="new">+ New project</button> <button class="g" id="out">Log out</button></p>
+<div id="list"></div>
+<div id="ed" class="hide"><h2 id="et">Project</h2>
+<div class="g2"><div><label>Title</label><input id="title"></div>
+<div><label>Category (use the same name to group, e.g. Brand &amp; Graphic, Web / UI UX, Video &amp; Content, Photography, Drone)</label><input id="cat"></div>
+<div><label>My role</label><input id="role"></div><div><label>Tools used</label><input id="tools"></div>
+<div><label>Order (smaller shows first)</label><input id="sort" type="number" value="0"></div>
+<div><label>Image (JPG/WebP, under 500 KB)</label><input id="file" type="file" accept="image/*"></div></div>
+<label>Short description</label><textarea id="descr"></textarea>
+<label>The Challenge</label><textarea id="challenge"></textarea><label>The Approach</label><textarea id="approach"></textarea>
+<label>The Design</label><textarea id="design"></textarea><label>The Execution</label><textarea id="execution"></textarea>
+<label>The Result</label><textarea id="result"></textarea>
+<p><button id="save">Save</button> <button class="g" id="cancel">Cancel</button></p></div></div></div>
+<script>
+const URL_="https://zcofxwlamcgmffbtsrmv.supabase.co/rest/v1/",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjb2Z4d2xhbWNnbWZmYnRzcm12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MDMxMTQsImV4cCI6MjEwNjM3OTExNH0.7zakvJLJ3Y4Nl1CMGuHxcAzK4SpkG8TSPaaUETQYkyM
+";
+const sb=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s);
+const F=["title","cat","role","tools","sort","descr","challenge","approach","design","execution","result"];
+let cur=null,msg=t=>$('#msg').textContent=t||'';
+async function boot(){const{data}=await sb.auth.getSession();show(!!data.session)}
+function show(on){$('#login').classList.toggle('hide',on);$('#app').classList.toggle('hide',!on);if(on)load()}
+$('#in').onclick=async()=>{msg('Logging in…');const{error}=await sb.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?msg(error.message):(msg(),show(true))};
+$('#out').onclick=async()=>{await sb.auth.signOut();show(false)};
+async function load(){const{data,error}=await sb.from('projects').select('*').order('sort').order('created_at');if(error)return msg(error.message);
+$('#list').innerHTML='';(data||[]).forEach(p=>{const r=document.createElement('div');r.className='row';
+r.innerHTML=`${p.image_url?`<img src="${p.image_url}" alt="">`:'<i></i>'}<b>${p.title}<br><small>${p.cat}</small></b>`;
+const e=document.createElement('button');e.className='g';e.textContent='Edit';e.onclick=()=>edit(p);
+const d=document.createElement('button');d.className='d';d.textContent='Delete';d.onclick=async()=>{if(confirm('Delete "'+p.title+'"?')){await sb.from('projects').delete().eq('id',p.id);load()}};
+r.append(e,d);$('#list').append(r)});if(!(data||[]).length)$('#list').innerHTML='<p>No projects yet. Click “New project”.</p>'}
+function edit(p){cur=p;$('#ed').classList.remove('hide');$('#et').textContent=p?'Edit project':'New project';F.forEach(k=>$('#'+k).value=p?(p[k]??''):(k=='sort'?0:''));$('#file').value='';$('#ed').scrollIntoView()}
+$('#new').onclick=()=>edit(null);$('#cancel').onclick=()=>$('#ed').classList.add('hide');
+$('#save').onclick=async()=>{if(!$('#title').value||!$('#cat').value)return msg('Title and category are required.');msg('Saving…');
+const row={};F.forEach(k=>row[k]=$('#'+k).value);row.sort=+row.sort||0;
+const f=$('#file').files[0];
+if(f){const path=Date.now()+'-'+f.name.replace(/[^a-z0-9.]/gi,'_');
+const{error}=await sb.storage.from('portfolio').upload(path,f,{cacheControl:'31536000'});if(error)return msg('Upload failed: '+error.message);
+row.image_url=sb.storage.from('portfolio').getPublicUrl(path).data.publicUrl}
+const q=cur?sb.from('projects').update(row).eq('id',cur.id):sb.from('projects').insert(row);
+const{error}=await q;if(error)return msg(error.message);msg('Saved. The live site updates on refresh.');$('#ed').classList.add('hide');load()};
+boot();
+</script></body></html>
