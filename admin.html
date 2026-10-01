@@ -32,7 +32,7 @@ button.g{background:none;color:#ece8df;border:1px solid #262c39}button.d{backgro
 <label>The Result</label><textarea id="result"></textarea>
 <p><button id="save">Save</button> <button class="g" id="cancel">Cancel</button></p></div></div></div>
 <script>
-const URL_="https://zcofxwlamcgmffbtsrmv.supabase.co/rest/v1/",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjb2Z4d2xhbWNnbWZmYnRzcm12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MDMxMTQsImV4cCI6MjEwNjM3OTExNH0.7zakvJLJ3Y4Nl1CMGuHxcAzK4SpkG8TSPaaUETQYkyM
+const URL_="https://zcofxwlamcgmffbtsrmv.supabase.co",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjb2Z4d2xhbWNnbWZmYnRzcm12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MDMxMTQsImV4cCI6MjEwNjM3OTExNH0.7zakvJLJ3Y4Nl1CMGuHxcAzK4SpkG8TSPaaUETQYkyM
 ";
 const sb=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s);
 const F=["title","cat","role","tools","sort","descr","challenge","approach","design","execution","result"];
