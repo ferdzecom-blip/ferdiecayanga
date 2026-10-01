@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Admin — Ferdie Cayanga</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 body{margin:0;background:#0d0f14;color:#ece8df;font:16px/1.5 system-ui,sans-serif;padding:24px}
 .w{max-width:860px;margin:0 auto}h1{font-size:28px;margin:0 0 20px}
@@ -15,7 +15,7 @@ button.g{background:none;color:#ece8df;border:1px solid #262c39}button.d{backgro
 #msg{color:#9cc4ff;min-height:24px}.hide{display:none}
 </style></head><body><div class="w">
 <h1>Portfolio admin</h1><div id="msg"></div>
-<div id="login"><label>Email</label><input id="em" type="email" autocomplete="username">
+<div id="login"><label>Supabase anon / publishable key (isang beses lang)</label><input id="ky" type="password" autocomplete="off"><label>Email</label><input id="em" type="email" autocomplete="username">
 <label>Password</label><input id="pw" type="password" autocomplete="current-password"><p><button id="in">Log in</button></p></div>
 <div id="app" class="hide">
 <p><button id="new">+ New project</button> <button class="g" id="out">Log out</button></p>
@@ -32,14 +32,13 @@ button.g{background:none;color:#ece8df;border:1px solid #262c39}button.d{backgro
 <label>The Result</label><textarea id="result"></textarea>
 <p><button id="save">Save</button> <button class="g" id="cancel">Cancel</button></p></div></div></div>
 <script>
-const URL_="https://zcofxwlamcgmffbtsrmv.supabase.co",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjb2Z4d2xhbWNnbWZmYnRzcm12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MDMxMTQsImV4cCI6MjEwNjM3OTExNH0.7zakvJLJ3Y4Nl1CMGuHxcAzK4SpkG8TSPaaUETQYkyM
-";
-const sb=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s);
+const URL_="https://zcofxwlamcgmffbtsrmv.supabase.co";
+const $=s=>document.querySelector(s);let sb;function mk(k){try{sb=supabase.createClient(URL_,k);return true}catch(e){$('#msg').textContent="Setup error: "+e.message;return false}}
 const F=["title","cat","role","tools","sort","descr","challenge","approach","design","execution","result"];
 let cur=null,msg=t=>$('#msg').textContent=t||'';
-async function boot(){const{data}=await sb.auth.getSession();show(!!data.session)}
+async function boot(){const k=localStorage.getItem('sbkey');if(!k||!mk(k))return;const{data}=await sb.auth.getSession();show(!!data.session)}
 function show(on){$('#login').classList.toggle('hide',on);$('#app').classList.toggle('hide',!on);if(on)load()}
-$('#in').onclick=async()=>{msg('Logging in…');const{error}=await sb.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?msg(error.message):(msg(),show(true))};
+$('#in').onclick=async()=>{if(typeof supabase==='undefined')return msg('Hindi nag-load ang Supabase script. I-refresh o i-check ang internet.');const k=$('#ky').value.trim()||localStorage.getItem('sbkey');if(!k)return msg('Ilagay ang Supabase key.');if(!mk(k))return;localStorage.setItem('sbkey',k);msg('Logging in…');const{error}=await sb.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?msg(error.message):(msg(),show(true))};
 $('#out').onclick=async()=>{await sb.auth.signOut();show(false)};
 async function load(){const{data,error}=await sb.from('projects').select('*').order('sort').order('created_at');if(error)return msg(error.message);
 $('#list').innerHTML='';(data||[]).forEach(p=>{const r=document.createElement('div');r.className='row';
