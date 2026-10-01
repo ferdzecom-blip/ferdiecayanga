@@ -22,7 +22,7 @@ button.g{background:none;color:#ece8df;border:1px solid #262c39}button.d{backgro
 <div id="list"></div>
 <div id="ed" class="hide"><h2 id="et">Project</h2>
 <div class="g2"><div><label>Title</label><input id="title"></div>
-<div><label>Category (use the same name to group, e.g. Brand &amp; Graphic, Web / UI UX, Video &amp; Content, Photography, Drone)</label><input id="cat"></div>
+<div><label>Category</label><select id="cat"><option>Brand &amp; Graphic</option><option>Web / UI UX</option><option>Video &amp; Content</option><option>Photography</option><option>Drone</option></select></div>
 <div><label>My role</label><input id="role"></div><div><label>Tools used</label><input id="tools"></div>
 <div><label>Order (smaller shows first)</label><input id="sort" type="number" value="0"></div>
 <div><label>Image (JPG/WebP, under 500 KB)</label><input id="file" type="file" accept="image/*"></div></div>
@@ -46,7 +46,7 @@ r.innerHTML=`${p.image_url?`<img src="${p.image_url}" alt="">`:'<i></i>'}<b>${p.
 const e=document.createElement('button');e.className='g';e.textContent='Edit';e.onclick=()=>edit(p);
 const d=document.createElement('button');d.className='d';d.textContent='Delete';d.onclick=async()=>{if(confirm('Delete "'+p.title+'"?')){await sb.from('projects').delete().eq('id',p.id);load()}};
 r.append(e,d);$('#list').append(r)});if(!(data||[]).length)$('#list').innerHTML='<p>No projects yet. Click “New project”.</p>'}
-function edit(p){cur=p;$('#ed').classList.remove('hide');$('#et').textContent=p?'Edit project':'New project';F.forEach(k=>$('#'+k).value=p?(p[k]??''):(k=='sort'?0:''));$('#file').value='';$('#ed').scrollIntoView()}
+function edit(p){cur=p;$('#ed').classList.remove('hide');$('#et').textContent=p?'Edit project':'New project';if(p&&p.cat&&![...$('#cat').options].some(o=>o.value==p.cat))$('#cat').add(new Option(p.cat));F.forEach(k=>$('#'+k).value=p?(p[k]??''):(k=='sort'?0:''));if(!$('#cat').value)$('#cat').selectedIndex=0;$('#file').value='';$('#ed').scrollIntoView()}
 $('#new').onclick=()=>edit(null);$('#cancel').onclick=()=>$('#ed').classList.add('hide');
 $('#save').onclick=async()=>{if(!$('#title').value||!$('#cat').value)return msg('Title and category are required.');msg('Saving…');
 const row={};F.forEach(k=>row[k]=$('#'+k).value);row.sort=+row.sort||0;
