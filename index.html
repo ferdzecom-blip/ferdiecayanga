@@ -221,10 +221,10 @@ footer{border-top:1px solid var(--line);padding:24px 0;color:var(--mut);font-siz
 
 <script>
 /* ============ EDIT YOUR CONTENT HERE ============ */
-const SITE={email:"hello@example.com",resume:"resume.pdf",
+const SITE={supabaseUrl:"https://zcofxwlamcgmffbtsrmv.supabase.co/rest/v1/",supabaseKey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjb2Z4d2xhbWNnbWZmYnRzcm12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MDMxMTQsImV4cCI6MjEwNjM3OTExNH0.7zakvJLJ3Y4Nl1CMGuHxcAzK4SpkG8TSPaaUETQYkyM",email:"ferdzkill@gmail.com",resume:"resume.pdf",
 social:[["LinkedIn","https://linkedin.com/in/your-handle"],["Instagram","https://instagram.com/your-handle"],["YouTube","https://youtube.com/@your-handle"],["TikTok","https://tiktok.com/@your-handle"],["GitHub","https://github.com/your-handle"]]};
 // image: set to a path/URL to replace the placeholder, e.g. "images/p1.jpg"
-const PROJECTS=[
+let PROJECTS=[
 {id:"p1",title:"Brand & Social System",cat:"Brand & Graphic",hue:["#2a3b5e","#121620"],image:"",desc:"Social creatives, promo graphics and event collaterals built as one consistent system.",role:"Art direction, design",tools:"Photoshop, Illustrator",challenge:"Edit me.",approach:"Edit me.",design:"Edit me.",execution:"Edit me.",result:"Edit me."},
 {id:"p2",title:"Landing Page Build",cat:"Web / UI UX",hue:["#3b2f55","#12141c"],image:"",desc:"Designed in Figma, built in WordPress, responsive on every screen.",role:"UI/UX, web build",tools:"Figma, WordPress, Elementor",challenge:"Edit me.",approach:"Edit me.",design:"Edit me.",execution:"Edit me.",result:"Edit me."},
 {id:"p3",title:"Aerial Landscapes",cat:"Drone",hue:["#1f4a58","#0d1319"],image:"",desc:"Cinematic aerial photo and video of travel locations.",role:"Pilot, shoot, edit, grade",tools:"DJI, Lightroom, Premiere Pro",challenge:"Edit me.",approach:"Edit me.",design:"Edit me.",execution:"Edit me.",result:"Edit me."},
@@ -251,11 +251,19 @@ lk.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{lk.classList
 const pos=[[0,0,-3],[34,16,2],[8,34,-1],[48,50,3],[16,64,-2],[52,80,1]];
 $('#stack').innerHTML=["Graphic Design","UI/UX & Web","Video","Photography","Content","Marketing"].map((t,i)=>`<div style="left:${pos[i][0]}%;top:${pos[i][1]}%;transform:rotate(${pos[i][2]}deg)">${t}</div>`).join('');
 // work
-const cats=["All",...new Set(PROJECTS.map(p=>p.cat))];
+const catsOf=()=>["All",...new Set(PROJECTS.map(p=>p.cat))];
 function renderWork(f){$('#grid').innerHTML='';PROJECTS.filter(p=>f=="All"||p.cat==f).forEach(p=>{const b=h('button',{className:'proj',type:'button'});b.innerHTML=`${img(p)}<h3>${p.title}</h3><div class="cat">${p.cat}</div><p>${p.desc}</p>`;b.onclick=()=>openP(p);$('#grid').append(b)})}
-$('#filters').innerHTML=cats.map((c,i)=>`<button aria-pressed="${i==0}">${c}</button>`).join('');
+const setFilters=()=>{$('#filters').innerHTML=catsOf().map((c,i)=>`<button aria-pressed="${i==0}">${c}</button>`).join('')};setFilters();
 $('#filters').onclick=e=>{if(e.target.tagName!='BUTTON')return;$('#filters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b==e.target));renderWork(e.target.textContent)};
 renderWork("All");
+const HUES=[["#2a3b5e","#121620"],["#3b2f55","#12141c"],["#1f4a58","#0d1319"],["#5a3a3a","#14121a"],["#4a4a32","#12140f"]];
+(async()=>{if(!SITE.supabaseUrl||!SITE.supabaseKey)return;try{
+const res=await fetch(SITE.supabaseUrl+"/rest/v1/projects?select=*&order=sort.asc,created_at.asc",{headers:{apikey:SITE.supabaseKey,Authorization:"Bearer "+SITE.supabaseKey}});
+const rows=await res.json();if(!Array.isArray(rows)||!rows.length)return;
+PROJECTS=rows.map((p,i)=>({id:p.id,title:p.title,cat:p.cat,hue:HUES[i%5],image:p.image_url||"",desc:p.descr||"",role:p.role||"",tools:p.tools||"",challenge:p.challenge||"",approach:p.approach||"",design:p.design||"",execution:p.execution||"",result:p.result||""}));
+setFilters();renderWork("All");
+$('#cs').innerHTML=csHTML(PROJECTS[1]||PROJECTS[0]);
+$('#gal').innerHTML=PROJECTS.concat(PROJECTS).slice(0,6).map(p=>img(p)).join('')}catch(e){console.warn(e)}})();
 const L=[["The Challenge","challenge"],["The Approach","approach"],["The Design","design"],["The Execution","execution"],["The Result","result"]];
 const csHTML=p=>L.map(([a,k])=>`<div><h4>${a}</h4><p>${p[k]}</p></div>`).join('');
 function openP(p){const d=$('#dlg');d.innerHTML=`<button class="btn sm x" id="cl">Close</button><div class="dl">${img(p)}<div class="cat" style="color:var(--acc)">${p.cat}</div><h3>${p.title}</h3><p class="lead">${p.desc}</p><dl class="meta"><div><dt>My role</dt><dd>${p.role}</dd></div><div><dt>Tools</dt><dd>${p.tools}</dd></div></dl><div class="cs">${csHTML(p)}</div></div>`;d.showModal();$('#cl').onclick=()=>d.close()}
